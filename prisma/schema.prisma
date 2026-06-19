@@ -1,0 +1,362 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum CnhCategory {
+  A
+  B
+  AB
+  C
+  D
+  E
+}
+
+enum PixKeyType {
+  CPF
+  CNPJ
+  EMAIL
+  PHONE
+  RANDOM
+}
+
+enum UnitType {
+  HOSPITAL
+  UBS
+  UPA
+  CLINIC
+  LABORATORY
+  PHARMACY
+  OTHER
+}
+
+enum TransportDirection {
+  ROUND_TRIP
+  OUTBOUND
+  RETURN
+}
+
+enum DocumentType {
+  DAILY_REQUEST
+  ROUTE_MAP
+}
+
+
+model User {
+  id String @id @default(uuid())
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  name         String
+  username     String  @unique
+  hashPassword String  @map("hash_password")
+  isAdmin      Boolean @default(false) @map("is_admin")
+
+  firstLogin            Boolean   @default(true) @map("first_login")
+  passwordResetRequired Boolean   @default(false) @map("password_reset_required")
+  lastPasswordChangedAt DateTime? @map("last_password_changed_at")
+
+  roles UserRole[]
+
+  createdAppointments  Appointment[] @relation("appointment_created_by")
+  canceledAppointments Appointment[] @relation("appointment_canceled_by")
+  createdTransports    Transport[]   @relation("transport_created_by")
+  canceledTransports   Transport[]   @relation("transport_canceled_by")
+
+  @@map("users")
+}
+
+model Role {
+  id   String @id @default(uuid())
+  name String @unique
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  permissions RolePermission[]
+  users       UserRole[]
+
+  @@map("roles")
+}
+
+model Permission {
+  id       String @id @default(uuid())
+  action   String
+  resource String
+
+  roles RolePermission[]
+
+  @@unique([action, resource])
+  @@map("permissions")
+}
+
+model RolePermission {
+  roleId       String @map("role_id")
+  permissionId String @map("permission_id")
+
+  role       Role       @relation(fields: [roleId], references: [id])
+  permission Permission @relation(fields: [permissionId], references: [id])
+
+  @@id([roleId, permissionId])
+  @@map("role_permissions")
+}
+
+model UserRole {
+  userId String @map("user_id")
+  roleId String @map("role_id")
+
+  user User @relation(fields: [userId], references: [id])
+  role Role @relation(fields: [roleId], references: [id])
+
+  @@id([userId, roleId])
+  @@map("user_roles")
+}
+
+model Address {
+  id         String  @id @default(uuid())
+  zipCode    String  @map("zip_code")
+  street     String
+  number     String
+  complement String?
+  district   String
+  city       String  @default("Mallet")
+  state      String  @default("PR")
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  people      Person[]
+  healthUnits HealthUnit[]
+
+  @@map("addresses")
+}
+
+model Person {
+  id           String   @id @default(uuid())
+  name         String
+  cpf          String
+  birthDate    DateTime @map("birth_date") @db.Date
+  phone        String   @db.VarChar(20)
+  observations String?
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  address   Address @relation(fields: [addressId], references: [id])
+  addressId String  @map("address_id")
+
+  appointmentsAsPatient   Appointment[] @relation("appointment_patient")
+  appointmentsAsCompanion Appointment[] @relation("appointment_companion")
+
+  @@unique([cpf, deletedAt])
+  @@map("people")
+}
+
+model Driver {
+  id            String      @id @default(uuid())
+  name          String
+  cpf           String      @unique
+  rg            String
+  role          String
+  birthDate     DateTime    @map("birth_date") @db.Date
+  phone         String
+  observations  String?
+  cnhNumber     String      @map("cnh_number")
+  cnhCategory   CnhCategory @map("cnh_category")
+  cnhExpiration DateTime    @map("cnh_expiration") @db.Date
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  paymentMethods PaymentMethod[]
+  transports     Transport[]
+
+  @@map("drivers")
+}
+
+model PaymentMethod {
+  id String @id @default(uuid())
+
+  label       String
+  bankName    String?     @map("bank_name")
+  bankAgency  String?     @map("bank_agency")
+  bankAccount String?     @map("bank_account")
+  pixKeyType  PixKeyType? @map("pix_key_type")
+  pixKey      String?     @map("pix_key")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  driver   Driver @relation(fields: [driverId], references: [id])
+  driverId String @map("driver_id")
+
+  @@map("payment_methods")
+}
+
+model Vehicle {
+  id           String  @id @default(uuid())
+  plate        String  @unique
+  model        String
+  brand        String
+  year         Int
+  color        String?
+  capacity     Int
+  observations String?
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  transports Transport[]
+
+  @@map("vehicles")
+}
+
+model HealthUnit {
+  id           String   @id @default(uuid())
+  unitName     String   @map("unit_name")
+  unitType     UnitType @map("unit_type")
+  cnpj         String   @unique
+  phone        String
+  email        String?
+  observations String?
+
+  address   Address @relation(fields: [addressId], references: [id])
+  addressId String  @unique @map("address_id")
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  appointments Appointment[]
+
+  @@map("health_units")
+}
+
+model HealthSpecialty {
+  id           String  @id @default(uuid())
+  name         String
+  observations String?
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  appointments Appointment[]
+
+  @@map("health_specialties")
+}
+
+model WaitingPlace {
+  id   String @id @default(uuid())
+  name String @unique
+
+  appointments Appointment[]
+
+  @@map("waiting_places")
+}
+
+model Transport {
+  id            String   @id @default(uuid())
+  date          DateTime @db.Date
+  departureTime String   @map("departure_time")
+
+  isCanceled   Boolean   @default(false) @map("is_canceled")
+  cancelReason String?   @map("cancel_reason")
+  canceledAt   DateTime? @map("canceled_at")
+
+  vehicleId String  @map("vehicle_id")
+  vehicle   Vehicle @relation(fields: [vehicleId], references: [id])
+
+  driverId String @map("driver_id")
+  driver   Driver @relation(fields: [driverId], references: [id])
+
+  createdById String @map("created_by_id")
+  createdBy   User   @relation("transport_created_by", fields: [createdById], references: [id])
+
+  canceledById String? @map("canceled_by_id")
+  canceledBy   User?   @relation("transport_canceled_by", fields: [canceledById], references: [id])
+
+  appointments AppointmentTransport[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([date])
+  @@map("transports")
+}
+
+model AppointmentTransport {
+  appointmentId String             @map("appointment_id")
+  transportId   String             @map("transport_id")
+  direction     TransportDirection
+
+  appointment Appointment @relation(fields: [appointmentId], references: [id])
+  transport   Transport   @relation(fields: [transportId], references: [id])
+
+  @@id([appointmentId, transportId])
+  @@map("appointment_transports")
+}
+
+model Appointment {
+  id           String   @id @default(uuid())
+  date         DateTime @db.Date
+  time         String
+  observations String?
+
+  isCanceled   Boolean   @default(false) @map("is_canceled")
+  cancelReason String?   @map("cancel_reason")
+  canceledAt   DateTime? @map("canceled_at")
+
+  patientId String @map("patient_id")
+  patient   Person @relation("appointment_patient", fields: [patientId], references: [id])
+
+  hasCompanion Boolean @default(false) @map("has_companion")
+  companionId  String? @map("companion_id")
+  companion    Person? @relation("appointment_companion", fields: [companionId], references: [id])
+
+  healthSpecialtyId String          @map("health_specialty_id")
+  healthSpecialty   HealthSpecialty @relation(fields: [healthSpecialtyId], references: [id])
+
+  healthUnitId String     @map("health_unit_id")
+  healthUnit   HealthUnit @relation(fields: [healthUnitId], references: [id])
+
+  waitingPlaceId String       @map("waiting_place_id")
+  waitingPlace   WaitingPlace @relation(fields: [waitingPlaceId], references: [id])
+
+  createdById String @map("created_by_id")
+  createdBy   User   @relation("appointment_created_by", fields: [createdById], references: [id])
+
+  canceledById String? @map("canceled_by_id")
+  canceledBy   User?   @relation("appointment_canceled_by", fields: [canceledById], references: [id])
+
+  transports AppointmentTransport[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([date])
+  @@map("appointments")
+}
+
+model DocumentTemplate {
+  id           String       @id @default(uuid())
+  type         DocumentType @unique
+  name         String
+  description  String?
+  fileName     String       @map("file_name")
+  fileData     Bytes        @map("file_data")
+  createdAt    DateTime     @default(now()) @map("created_at")
+  updatedAt    DateTime     @updatedAt      @map("updated_at")
+
+  @@map("document_templates")
+}
