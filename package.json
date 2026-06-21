@@ -5,9 +5,8 @@
   "scripts": {
     "dev": "next dev",
     "build": "yarn prisma db push && prisma generate && next build",
-    "start": "next start",
-    "seed": "tsx --env-file=.env prisma/seed.ts",
-    "seed:populate": "tsx --env-file=.env prisma/seed-populate.ts"
+    "start": "next start -H 0.0.0.0 -p 80",
+    "seed": "tsx --env-file=.env prisma/seed.ts"
   },
   "dependencies": {
     "@heroui/react": "^3.1.0",
