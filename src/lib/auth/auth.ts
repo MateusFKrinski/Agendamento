@@ -6,7 +6,6 @@ import { getUserPermissions } from "@/lib/auth/permissions";
 
 export const authOptions: NextAuthOptions = {
   session: { strategy: "jwt" },
-  trustHost: true,
 
   providers: [
     CredentialsProvider({
