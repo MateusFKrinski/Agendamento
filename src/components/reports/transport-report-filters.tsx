@@ -134,7 +134,7 @@ export function TransportReportFiltersPanel({
         setOpen(v);
       }}
       onClearAll={onClearAll}
-      width={480}
+      width={700}
       activeFilters={<ActiveFilters chips={chips} onClear={onClearOne} />}
     >
       <form
