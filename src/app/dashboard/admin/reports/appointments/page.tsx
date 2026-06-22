@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback, useEffect } from "react";
-import { Chip, Table } from "@heroui/react";
+import { Button, Chip, Table } from "@heroui/react";
 import { listAppointmentReport } from "@/actions/reports";
 import { listHealthSpecialties } from "@/actions/healthSpecialty";
 import { listHealthUnits } from "@/actions/healthUnit";
@@ -13,6 +13,8 @@ import { AsyncState } from "@/components/ui/async-state";
 import { TablePagination } from "@/components/ui/table-pagination";
 import { AppointmentReportFilters } from "@/lib/schemas/appointmentReportFilters";
 import { AppointmentReportFiltersPanel } from "@/components/reports/appointment-report-filters";
+import { DownloadIcon } from "lucide-react";
+import { downloadAppointmentsCsv } from "@/lib/utils/download-csv";
 
 type SelectOption = { label: string; value: string };
 
@@ -105,16 +107,27 @@ export default function Page() {
         </p>
       </div>
 
-      <AppointmentReportFiltersPanel
-        filters={filters}
-        specialties={specialties}
-        healthUnits={healthUnits}
-        waitingPlaces={waitingPlaces}
-        users={users}
-        onApply={applyFilters}
-        onClearOne={clearFilter}
-        onClearAll={clearAll}
-      />
+      <div className="flex justify-between items-center">
+        <AppointmentReportFiltersPanel
+          filters={filters}
+          specialties={specialties}
+          healthUnits={healthUnits}
+          waitingPlaces={waitingPlaces}
+          users={users}
+          onApply={applyFilters}
+          onClearOne={clearFilter}
+          onClearAll={clearAll}
+        />
+
+        <Button
+          onPress={() => {
+            downloadAppointmentsCsv(appointments, "agendamentos.csv");
+          }}
+        >
+          <DownloadIcon />
+          Baixar relatório
+        </Button>
+      </div>
 
       <AsyncState
         data={appointments}

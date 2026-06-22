@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback, useEffect } from "react";
-import { Chip, Table } from "@heroui/react";
+import { Button, Chip, Table } from "@heroui/react";
 import { listTransportReport } from "@/actions/reports";
 import { listVehicles } from "@/actions/vehicle";
 import { listDrivers } from "@/actions/driver";
@@ -13,6 +13,8 @@ import { maskPlate } from "@/lib/utils/masks";
 import { TransportReportFilters } from "@/lib/schemas/transportReportFilters";
 import { TransportReportFiltersPanel } from "@/components/reports/transport-report-filters";
 import { countPassengers } from "@/lib/utils/count-passengers";
+import { downloadTransportsCsv } from "@/lib/utils/download-csv";
+import { DownloadIcon } from "lucide-react";
 
 type SelectOption = { label: string; value: string };
 
@@ -85,14 +87,25 @@ export default function Page() {
         </p>
       </div>
 
-      <TransportReportFiltersPanel
-        filters={filters}
-        vehicles={vehicles}
-        drivers={drivers}
-        onApply={applyFilters}
-        onClearOne={clearFilter}
-        onClearAll={clearAll}
-      />
+      <div className="flex justify-between items-center">
+        <TransportReportFiltersPanel
+          filters={filters}
+          vehicles={vehicles}
+          drivers={drivers}
+          onApply={applyFilters}
+          onClearOne={clearFilter}
+          onClearAll={clearAll}
+        />
+
+        <Button
+          onPress={() => {
+            downloadTransportsCsv(transports, "transportes.csv");
+          }}
+        >
+          <DownloadIcon />
+          Baixar relatório
+        </Button>
+      </div>
 
       <AsyncState
         data={transports}
