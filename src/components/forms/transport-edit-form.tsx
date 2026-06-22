@@ -86,7 +86,7 @@ export default function TransportEditForm({
           </DetailField>
         </div>
         <p className="text-xs text-muted">
-          O veículo e a data não podem ser alterados.
+          O veículo e a data não podem ser alterados
         </p>
       </div>
 
@@ -116,6 +116,7 @@ export default function TransportEditForm({
           render={({ field }) => (
             <SearchSelectField
               label="Motorista"
+              variant="secondary"
               placeholder="Buscar motorista..."
               error={errors.driverId?.message}
               options={drivers}
