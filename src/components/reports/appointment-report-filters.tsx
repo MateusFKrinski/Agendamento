@@ -167,7 +167,7 @@ export function AppointmentReportFiltersPanel({
         setOpen(v);
       }}
       onClearAll={onClearAll}
-      width={600}
+      width={700}
       activeFilters={<ActiveFilters chips={chips} onClear={onClearOne} />}
     >
       <form
