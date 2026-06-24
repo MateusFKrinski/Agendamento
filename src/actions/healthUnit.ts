@@ -57,11 +57,6 @@ export const createHealthUnit = withPermission(
         throw new Error(parsed.error.issues.map((i) => i.message).join(", "));
       }
 
-      const existing = await prisma.healthUnit.findFirst({
-        where: { cnpj: parsed.data.cnpj, deletedAt: null },
-      });
-      if (existing) throw new Error("Já existe uma unidade com esse CNPJ");
-
       const { address, ...rest } = parsed.data;
 
       const unit = await prisma.healthUnit.create({
@@ -89,11 +84,6 @@ export const updateHealthUnit = withAllPermissions(
       if (!parsed.success) {
         throw new Error(parsed.error.issues.map((i) => i.message).join(", "));
       }
-
-      const existing = await prisma.healthUnit.findFirst({
-        where: { cnpj: parsed.data.cnpj, NOT: { id } },
-      });
-      if (existing) throw new Error("Já existe uma unidade com esse CNPJ");
 
       const { address, ...rest } = parsed.data;
 
