@@ -225,7 +225,7 @@ model HealthUnit {
   id           String   @id @default(uuid())
   unitName     String   @map("unit_name")
   unitType     UnitType @map("unit_type")
-  cnpj         String   @unique
+  cnpj         String
   phone        String
   email        String?
   observations String?
