@@ -115,7 +115,7 @@ export const generateDaily = withPermission(
       doc.render(data);
 
       const buffer = doc.getZip().generate({ type: "nodebuffer" });
-      const fileName = `${transport.driver.name.trim().split(/\s+/)[0]} ${transport.driver.name.trim().split(/\s+/).at(-1)} ${new Date().toLocaleDateString("pt-BR").replace(/\//g, "-")}.docx`;
+      const fileName = `Diária ${transport.driver.name.trim().split(/\s+/)[0]} ${transport.driver.name.trim().split(/\s+/).at(-1)} ${new Date().toLocaleDateString("pt-BR").replace(/\//g, "-")}.docx`;
 
       return { fileName, fileData: Array.from(buffer) };
     });
