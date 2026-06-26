@@ -115,7 +115,7 @@ export const generateDaily = withPermission(
       doc.render(data);
 
       const buffer = doc.getZip().generate({ type: "nodebuffer" });
-      const fileName = `Diária_${transport.driver.name.replace(/\s+/g, "_")}.docx`;
+      const fileName = `${transport.driver.name.trim().split(/\s+/)[0]} ${transport.driver.name.trim().split(/\s+/).at(-1)} ${new Date().toLocaleDateString("pt-BR").replace(/\//g, "-")}.docx`;
 
       return { fileName, fileData: Array.from(buffer) };
     });
@@ -275,7 +275,7 @@ export const generateRouteMap = withPermission(
       doc.render(data);
 
       const buffer = doc.getZip().generate({ type: "nodebuffer" });
-      const fileName = `Mapa_Rotas_${transport.driver.name.replace(/\s+/g, "_")}.docx`;
+      const fileName = `Mapa Rota ${new Date().toLocaleDateString("pt-BR").replace(/\//g, "-")} ${transport.driver.name.trim().split(/\s+/)[0]} ${transport.driver.name.trim().split(/\s+/).slice(-1)[0]}.docx`;
 
       return { fileName, fileData: Array.from(buffer) };
     });
