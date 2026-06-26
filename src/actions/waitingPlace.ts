@@ -61,7 +61,7 @@ export const listAllWaitingPlaces = withPermission(
 );
 
 export const createWaitingPlace = withPermission(
-  "create",
+  "read",
   "waitingPlace",
   async (data: unknown): Promise<ActionResult<{ waitingPlaceId: string }>> => {
     return createResult(async () => {
